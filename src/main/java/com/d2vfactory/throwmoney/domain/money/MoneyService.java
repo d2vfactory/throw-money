@@ -24,7 +24,7 @@ public class MoneyService {
     }
 
     @Transactional
-    public ThrowMoneyDTO doThrowMoney(ThrowMoneyForm throwMoneyForm) {
+    public ThrowMoneyDTO throwMoney(ThrowMoneyForm throwMoneyForm) {
         ThrowMoney throwMoney = new ThrowMoney(throwMoneyForm);
 
         // 원하는 수 만큼 정해진 돈 뿌리기
@@ -45,6 +45,31 @@ public class MoneyService {
         throwMoneyRepository.save(throwMoney);
 
         return new ThrowMoneyDTO(throwMoney);
+    }
+
+    @Transactional
+    public ReceiveMoneyDTO receiveMoneyDTO(ReceiveMoneyForm receiveMoneyForm) {
+        // token 과 room 정보로 throw money 정보 조회
+        ThrowMoney throwMoney = throwMoneyRepository.fetchByTokenAndRoom(receiveMoneyForm.getToken(), receiveMoneyForm.getRoom())
+                .orElseThrow(RuntimeException::new);
+
+        // 선점 처리
+        // select for update
+        List<ReceiveMoney> receiveList = receiveMoneyRepository.findAllByThrowMoney(throwMoney);
+
+        // receive 정보에 이미 받은 정보 있으면 예외처리
+        receiveList.stream()
+                .filter(x -> x.getUser() == receiveMoneyForm.getUser())
+                .findAny()
+                .ifPresent(x -> {
+                    throw new RuntimeException();
+                });
+
+        ReceiveMoney anyReceiveMoney = receiveList.stream().filter(x -> x.getUser() == null).findFirst().get();
+        anyReceiveMoney.setUser(receiveMoneyForm.getUser());
+        receiveMoneyRepository.save(anyReceiveMoney);
+
+        return new ReceiveMoneyDTO(anyReceiveMoney);
     }
 
 

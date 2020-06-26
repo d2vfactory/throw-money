@@ -34,11 +34,11 @@ class MoneyServiceTest {
 
     @Test
     @DisplayName("돈 뿌려 보자 - 10000원 3명")
-    void doThrowMoney_user1_room1() {
+    void throwMoney_user1_room1() {
         int money = 10000;
         int size = 3;
         long userId = 1L;
-        String roomId = "room-00003";
+        String roomId = "room-00001";
 
         User user = userRepository.findById(userId).get();
         Room room = roomRepository.findById(roomId).get();
@@ -49,7 +49,7 @@ class MoneyServiceTest {
         form.setMoney(money);
         form.setSize(size);
 
-        ThrowMoneyDTO throwMoneyDTO = moneyService.doThrowMoney(form);
+        ThrowMoneyDTO throwMoneyDTO = moneyService.throwMoney(form);
 
         assertThat(throwMoneyDTO)
                 .hasFieldOrPropertyWithValue("userId", userId)
@@ -70,4 +70,42 @@ class MoneyServiceTest {
 
 
     }
+
+    @Test
+    public void receive_money_user2_room1(){
+        int money = 10000;
+        int size = 3;
+        long userId = 1L;
+        long receiveUserId = 2L;
+        String roomId = "room-00001";
+
+        User user = userRepository.findById(userId).get();
+        User receiveUser = userRepository.findById(receiveUserId).get();
+        Room room = roomRepository.findById(roomId).get();
+
+
+        // 1번이 돈뿌리기
+        ThrowMoneyForm form = new ThrowMoneyForm();
+        form.setUser(user);
+        form.setRoom(room);
+        form.setMoney(money);
+        form.setSize(size);
+
+        ThrowMoneyDTO throwMoneyDTO = moneyService.throwMoney(form);
+
+        // 2번이 돈 받기
+        ReceiveMoneyForm receiveMoneyForm = new ReceiveMoneyForm();
+        receiveMoneyForm.setUser(receiveUser);
+        receiveMoneyForm.setRoom(room);
+        receiveMoneyForm.setToken(throwMoneyDTO.getToken());
+
+        ReceiveMoneyDTO receiveMoneyDTO = moneyService.receiveMoneyDTO(receiveMoneyForm);
+        log.info("# {}", receiveMoneyDTO);
+
+        ThrowMoney throwMoney = throwMoneyRepository.fetchByTokenAndUser(throwMoneyDTO.getToken(), user).get();
+        log.info("# {}", throwMoney);
+
+    }
+
+    
 }
