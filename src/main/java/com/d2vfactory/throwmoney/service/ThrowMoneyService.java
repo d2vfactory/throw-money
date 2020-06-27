@@ -1,5 +1,6 @@
-package com.d2vfactory.throwmoney.domain.money;
+package com.d2vfactory.throwmoney.service;
 
+import com.d2vfactory.throwmoney.domain.money.*;
 import com.d2vfactory.throwmoney.domain.money.repository.ReceiveMoneyRepository;
 import com.d2vfactory.throwmoney.domain.money.repository.ThrowMoneyRepository;
 import com.d2vfactory.throwmoney.domain.token.repository.TokenRepository;
@@ -9,17 +10,16 @@ import javax.transaction.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 
 @Service
-public class MoneyService {
+public class ThrowMoneyService {
 
     private final ThrowMoneyRepository throwMoneyRepository;
     private final ReceiveMoneyRepository receiveMoneyRepository;
     private final TokenRepository tokenRepository;
 
-    public MoneyService(ThrowMoneyRepository throwMoneyRepository, ReceiveMoneyRepository receiveMoneyRepository, TokenRepository tokenRepository) {
+    public ThrowMoneyService(ThrowMoneyRepository throwMoneyRepository, ReceiveMoneyRepository receiveMoneyRepository, TokenRepository tokenRepository) {
         this.throwMoneyRepository = throwMoneyRepository;
         this.receiveMoneyRepository = receiveMoneyRepository;
         this.tokenRepository = tokenRepository;
@@ -92,7 +92,7 @@ public class MoneyService {
 
     private void validateReceive(TokenForm tokenForm, ThrowMoney throwMoney) {
         // 돈뿌린 사람이 받으려고 하면
-        if (throwMoney.getUser() == tokenForm.getUser())
+        if (throwMoney.getUser().equals(tokenForm.getUser()))
             throw new RuntimeException();
 
         List<ReceiveMoney> receivers = throwMoney.getReceivers();
@@ -116,7 +116,7 @@ public class MoneyService {
 
         // 받은 이력있으면.
         receivers.stream()
-                .filter(x -> x.getUser() == tokenForm.getUser())
+                .filter(x -> x.getUser().equals(tokenForm.getUser()))
                 .findAny()
                 .ifPresent(x -> {
                     throw new RuntimeException();

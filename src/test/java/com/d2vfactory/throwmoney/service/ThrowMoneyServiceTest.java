@@ -1,5 +1,6 @@
-package com.d2vfactory.throwmoney.domain.money;
+package com.d2vfactory.throwmoney.service;
 
+import com.d2vfactory.throwmoney.domain.money.*;
 import com.d2vfactory.throwmoney.domain.money.repository.ThrowMoneyRepository;
 import com.d2vfactory.throwmoney.domain.user.Room;
 import com.d2vfactory.throwmoney.domain.user.User;
@@ -18,10 +19,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Slf4j
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
-class MoneyServiceTest {
+class ThrowMoneyServiceTest {
 
     @Autowired
-    private MoneyService moneyService;
+    private ThrowMoneyService throwMoneyService;
 
     @Autowired
     private UserRepository userRepository;
@@ -50,7 +51,7 @@ class MoneyServiceTest {
                 .size(size)
                 .build();
 
-        ThrowMoneyDTO throwMoneyDTO = moneyService.throwMoney(form);
+        ThrowMoneyDTO throwMoneyDTO = throwMoneyService.throwMoney(form);
 
         assertThat(throwMoneyDTO)
                 .hasFieldOrPropertyWithValue("userId", userId)
@@ -93,7 +94,7 @@ class MoneyServiceTest {
                 .size(size)
                 .build();
 
-        ThrowMoneyDTO throwMoneyDTO = moneyService.throwMoney(form);
+        ThrowMoneyDTO throwMoneyDTO = throwMoneyService.throwMoney(form);
 
         // 2번이 돈 받기
         TokenForm receiveForm = TokenForm.builder()
@@ -102,7 +103,7 @@ class MoneyServiceTest {
                 .token(throwMoneyDTO.getToken())
                 .build();
         
-        ReceiveMoneyDTO receiveMoneyDTO = moneyService.receiveMoney(receiveForm);
+        ReceiveMoneyDTO receiveMoneyDTO = throwMoneyService.receiveMoney(receiveForm);
         log.info("# {}", receiveMoneyDTO);
 
         // 뿌린돈 조회
@@ -112,7 +113,7 @@ class MoneyServiceTest {
                 .token(throwMoneyDTO.getToken())
                 .build();
 
-        ThrowMoneyDTO getThrowMoney = moneyService.getThrowMoney(throwUserForm);
+        ThrowMoneyDTO getThrowMoney = throwMoneyService.getThrowMoney(throwUserForm);
         log.info("# getThrowMoney : {}", getThrowMoney);
 
     }
