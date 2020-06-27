@@ -25,6 +25,14 @@ HTTP Header로 전달됩니다.
 * 뿌린돈 조회
   * 뿌린 사람 본민만 조회 가능하며 7일만 유효하다
 
+#### 개발 환경
+* Language : Java 11
+* Framework : SpringBoot 2.3.1.RELEASE 
+  * spring-boot-starter-data-jpa
+  * spring-boot-starter-web
+  * spring-boot-starter-aop
+* DB : h2   
+
 #### 문제 해결 전략
 * 3자리 문자열 토큰
   * AlphaNumeric 기준으로 64^3 이기 때문에 최대 238,328 자리 밖에 안되서 중복 발생 확률이 높다.
@@ -33,6 +41,9 @@ HTTP Header로 전달됩니다.
   * 토큰 기준으로 배정되지 않은 돈을 선착순으로 받아가기 때문에 동시 요청에 대한 제약이 있어야 한다.
     * 배정되지 않은 토큰의 위치를 찾아서 처리하기 까지 lock 걸어서 먼저 온 요청에 대해 처리하도록 함.
     * @Lock(LockModeType.PESSIMISTIC_WRITE) 
+* 뿌리고 받은 행위에 대한 잔액 처리는 하지 않음
+  * EVENT 테이블에 각 행위별 금액 처리를 남김
+    * 이후 다른 프로젝트등에서 해당 EVENT를 가져가서 잔액 처리를 할 수 있도록 함.
 
 #### 기본 데이터 세팅
 사용자
