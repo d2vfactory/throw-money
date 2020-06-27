@@ -43,19 +43,19 @@ class MoneyServiceTest {
         User user = userRepository.findById(userId).get();
         Room room = roomRepository.findById(roomId).get();
 
-        ThrowMoneyForm form = new ThrowMoneyForm();
-        form.setUser(user);
-        form.setRoom(room);
-        form.setMoney(money);
-        form.setSize(size);
+        ThrowMoneyForm form = ThrowMoneyForm.builder()
+                .user(user)
+                .room(room)
+                .money(money)
+                .size(size)
+                .build();
 
         ThrowMoneyDTO throwMoneyDTO = moneyService.throwMoney(form);
 
         assertThat(throwMoneyDTO)
                 .hasFieldOrPropertyWithValue("userId", userId)
                 .hasFieldOrPropertyWithValue("roomId", roomId)
-                .hasFieldOrPropertyWithValue("throwMoney", money)
-                .hasFieldOrPropertyWithValue("size", size);
+                .hasFieldOrPropertyWithValue("throwMoney", money);
 
 
         ThrowMoney throwMoney = throwMoneyRepository.fetchByTokenAndUser(throwMoneyDTO.getToken(), user).get();
@@ -72,7 +72,8 @@ class MoneyServiceTest {
     }
 
     @Test
-    public void receive_money_user2_room1(){
+    @DisplayName("돈 받기 - 10000원 3명 뿌리고 1명 받기")
+    public void receive_money_user2_room1() {
         int money = 10000;
         int size = 3;
         long userId = 1L;
@@ -85,27 +86,36 @@ class MoneyServiceTest {
 
 
         // 1번이 돈뿌리기
-        ThrowMoneyForm form = new ThrowMoneyForm();
-        form.setUser(user);
-        form.setRoom(room);
-        form.setMoney(money);
-        form.setSize(size);
+        ThrowMoneyForm form = ThrowMoneyForm.builder()
+                .user(user)
+                .room(room)
+                .money(money)
+                .size(size)
+                .build();
 
         ThrowMoneyDTO throwMoneyDTO = moneyService.throwMoney(form);
 
         // 2번이 돈 받기
-        ReceiveMoneyForm receiveMoneyForm = new ReceiveMoneyForm();
-        receiveMoneyForm.setUser(receiveUser);
-        receiveMoneyForm.setRoom(room);
-        receiveMoneyForm.setToken(throwMoneyDTO.getToken());
-
-        ReceiveMoneyDTO receiveMoneyDTO = moneyService.receiveMoneyDTO(receiveMoneyForm);
+        TokenForm receiveForm = TokenForm.builder()
+                .user(receiveUser)
+                .room(room)
+                .token(throwMoneyDTO.getToken())
+                .build();
+        
+        ReceiveMoneyDTO receiveMoneyDTO = moneyService.receiveMoney(receiveForm);
         log.info("# {}", receiveMoneyDTO);
 
-        ThrowMoney throwMoney = throwMoneyRepository.fetchByTokenAndUser(throwMoneyDTO.getToken(), user).get();
-        log.info("# {}", throwMoney);
+        // 뿌린돈 조회
+        TokenForm throwUserForm = TokenForm.builder()
+                .user(user)
+                .room(room)
+                .token(throwMoneyDTO.getToken())
+                .build();
+
+        ThrowMoneyDTO getThrowMoney = moneyService.getThrowMoney(throwUserForm);
+        log.info("# getThrowMoney : {}", getThrowMoney);
 
     }
 
-    
+
 }

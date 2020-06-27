@@ -6,8 +6,10 @@ import com.d2vfactory.throwmoney.domain.token.repository.TokenRepository;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -23,16 +25,31 @@ public class MoneyService {
         this.tokenRepository = tokenRepository;
     }
 
+    // 뿌린도 조회
+    public ThrowMoneyDTO getThrowMoney(TokenForm tokenForm) {
+        // token과 User 정보로 throwMoney 조회
+        ThrowMoney throwMoney = throwMoneyRepository.fetchByTokenAndUser(tokenForm.getToken(), tokenForm.getUser())
+                .filter(x -> x.getCreateDate().plusDays(7).isAfter(LocalDateTime.now()))
+                .orElseThrow(RuntimeException::new);
+
+        return new ThrowMoneyDTO(throwMoney);
+
+    }
+
+    // 돈뿌리기
     @Transactional
     public ThrowMoneyDTO throwMoney(ThrowMoneyForm throwMoneyForm) {
         ThrowMoney throwMoney = new ThrowMoney(throwMoneyForm);
 
-        // 원하는 수 만큼 정해진 돈 뿌리기
+        // 랜덤 분배 
         List<Integer> moneyList = divideMoney(throwMoneyForm.getSize(), throwMoneyForm.getMoney());
-        for (int i = 0; i < moneyList.size(); i++)
-            throwMoney.getReceivers().add(new ReceiveMoney(throwMoney, moneyList.get(i)));
 
-        // 토큰 값과 매핑할 ID를 가져오기 위해 일단 영속성 저장.
+        // 원하는 수 만큼 정해진 돈 뿌리기
+        moneyList.stream()
+                .map(x -> new ReceiveMoney(throwMoney, x))
+                .forEach(x -> throwMoney.getReceivers().add(x));
+
+        // 토큰 값과 매핑할 ID를 가져오기 위해 먼저 영속성 저장.
         throwMoneyRepository.save(throwMoney);
 
         // DB에 저장해둔 랜덤 토큰을 throw money id 에 맞춰서 가져온다.
@@ -47,29 +64,63 @@ public class MoneyService {
         return new ThrowMoneyDTO(throwMoney);
     }
 
+    // 뿌린돈 받기
     @Transactional
-    public ReceiveMoneyDTO receiveMoneyDTO(ReceiveMoneyForm receiveMoneyForm) {
-        // token 과 room 정보로 throw money 정보 조회
-        ThrowMoney throwMoney = throwMoneyRepository.fetchByTokenAndRoom(receiveMoneyForm.getToken(), receiveMoneyForm.getRoom())
+    public ReceiveMoneyDTO receiveMoney(TokenForm tokenForm) {
+        // token 과 room 정보로 throwMoney 정보 조회
+        ThrowMoney throwMoney = throwMoneyRepository.fetchByTokenAndRoom(tokenForm.getToken(), tokenForm.getRoom())
                 .orElseThrow(RuntimeException::new);
+
+        // 받을 수 있는 상태인지 체크 (뿌린사람 / 10분이내 / 중복지급 제외)
+        validateReceive(tokenForm, throwMoney);
 
         // 선점 처리
         // select for update
         List<ReceiveMoney> receiveList = receiveMoneyRepository.findAllByThrowMoney(throwMoney);
 
-        // receive 정보에 이미 받은 정보 있으면 예외처리
-        receiveList.stream()
-                .filter(x -> x.getUser() == receiveMoneyForm.getUser())
+        // 비어 있는 것 중에 first 정보 조회
+        ReceiveMoney anyReceiveMoney = receiveList.stream()
+                .filter(x -> x.getUser() == null)
+                .findFirst()
+                .orElseThrow(RuntimeException::new);
+
+        anyReceiveMoney.setUser(tokenForm.getUser());
+        receiveMoneyRepository.save(anyReceiveMoney);
+
+        return new ReceiveMoneyDTO(anyReceiveMoney);
+    }
+
+    private void validateReceive(TokenForm tokenForm, ThrowMoney throwMoney) {
+        // 돈뿌린 사람이 받으려고 하면
+        if (throwMoney.getUser() == tokenForm.getUser())
+            throw new RuntimeException();
+
+        List<ReceiveMoney> receivers = throwMoney.getReceivers();
+
+        // 선착순 완료 확인
+        receivers.stream()
+                .filter(x -> x.getUser() == null)
+                .findAny()
+                .ifPresentOrElse(
+                        // 아직 할당 되지 않은 쀠기 돈이 있으면.
+                        r -> {
+                            // 10분 지났으면..
+                            if (r.getCreateDate().plusMinutes(10).isBefore(LocalDateTime.now()))
+                                throw new RuntimeException();
+                        },
+                        // 모두 할당 되었으면.
+                        () -> {
+                            throw new RuntimeException();
+                        }
+                );
+
+        // 받은 이력있으면.
+        receivers.stream()
+                .filter(x -> x.getUser() == tokenForm.getUser())
                 .findAny()
                 .ifPresent(x -> {
                     throw new RuntimeException();
                 });
-
-        ReceiveMoney anyReceiveMoney = receiveList.stream().filter(x -> x.getUser() == null).findFirst().get();
-        anyReceiveMoney.setUser(receiveMoneyForm.getUser());
-        receiveMoneyRepository.save(anyReceiveMoney);
-
-        return new ReceiveMoneyDTO(anyReceiveMoney);
     }
 
 
@@ -79,6 +130,7 @@ public class MoneyService {
         if (money < size)
             throw new RuntimeException();
 
+        // 기본 분배 금액 : 사이즈 만큼 나누기
         int basicMoney = money / size;
 
         // 골고루 나눈다
