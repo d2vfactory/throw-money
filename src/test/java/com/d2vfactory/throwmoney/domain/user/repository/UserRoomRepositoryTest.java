@@ -15,9 +15,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 class UserRoomRepositoryTest {
 
     @Autowired
-    private UserRepository userRepository;
-
-    @Autowired
     private RoomRepository roomRepository;
 
     @Autowired
