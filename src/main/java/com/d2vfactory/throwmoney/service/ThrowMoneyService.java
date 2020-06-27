@@ -26,7 +26,7 @@ public class ThrowMoneyService {
         this.tokenRepository = tokenRepository;
     }
 
-    // 뿌린도 조회
+    // 뿌린돈 조회
     public ThrowMoneyDTO getThrowMoney(TokenForm tokenForm) {
         // token과 User 정보로 throwMoney 조회
         ThrowMoney throwMoney = throwMoneyRepository.fetchByTokenAndUser(tokenForm.getToken(), tokenForm.getUser())
