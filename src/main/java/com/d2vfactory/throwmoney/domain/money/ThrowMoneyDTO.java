@@ -12,6 +12,8 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 public class ThrowMoneyDTO {
 
+    private long id;
+    
     private String token;
 
     private long userId;
@@ -33,6 +35,7 @@ public class ThrowMoneyDTO {
     private LocalDateTime createdDate;
 
     public ThrowMoneyDTO(ThrowMoney throwMoney) {
+        this.id = throwMoney.getId();
         this.token = throwMoney.getToken();
         this.userId = throwMoney.getUser().getId();
         this.userName = throwMoney.getUser().getName();

@@ -13,8 +13,12 @@ public class ReceiveMoneyDTO {
 
     private long receiveUserId;
 
+    private String receiveRoomId;
+
     private String receiveUserName;
 
+    private long throwMoneyId;
+    
     private int receiveMoney;
 
     @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
@@ -22,6 +26,8 @@ public class ReceiveMoneyDTO {
 
     public ReceiveMoneyDTO(ReceiveMoney receiveMoney) {
         this.receiveUserId = receiveMoney.getUser().getId();
+        this.receiveRoomId = receiveMoney.getThrowMoney().getRoom().getId();
+        this.throwMoneyId = receiveMoney.getThrowMoney().getId();
         this.receiveUserName = receiveMoney.getUser().getName();
         this.receiveMoney = receiveMoney.getMoney();
 

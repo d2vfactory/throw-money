@@ -1,5 +1,6 @@
 package com.d2vfactory.throwmoney.service;
 
+import com.d2vfactory.throwmoney.aspect.PublishEvent;
 import com.d2vfactory.throwmoney.domain.money.*;
 import com.d2vfactory.throwmoney.domain.money.repository.ReceiveMoneyRepository;
 import com.d2vfactory.throwmoney.domain.money.repository.ThrowMoneyRepository;
@@ -38,6 +39,7 @@ public class ThrowMoneyService {
     }
 
     // 돈뿌리기
+    @PublishEvent
     @Transactional
     public ThrowMoneyDTO throwMoney(ThrowMoneyForm throwMoneyForm) {
         ThrowMoney throwMoney = new ThrowMoney(throwMoneyForm);
@@ -64,6 +66,7 @@ public class ThrowMoneyService {
     }
 
     // 뿌린돈 받기
+    @PublishEvent
     @Transactional
     public ReceiveMoneyDTO receiveMoney(TokenForm tokenForm) {
         // token 과 room 정보로 throwMoney 정보 조회

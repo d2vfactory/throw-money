@@ -4,6 +4,7 @@ import com.d2vfactory.throwmoney.domain.user.Room;
 import com.d2vfactory.throwmoney.domain.user.User;
 import com.d2vfactory.throwmoney.domain.user.repository.RoomRepository;
 import com.d2vfactory.throwmoney.domain.user.repository.UserRepository;
+import com.d2vfactory.throwmoney.exceptions.RequiredHeaderException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.handler.HandlerInterceptorAdapter;
@@ -33,10 +34,10 @@ public class HeaderToAttributeInterceptor extends HandlerInterceptorAdapter {
         String roomId = request.getHeader(HEADER_ROOM_ID);
 
         User user = userRepository.findById(userId)
-                .orElseThrow(RuntimeException::new);
+                .orElseThrow(RequiredHeaderException::new);
 
         Room room = roomRepository.findById(roomId)
-                .orElseThrow(RuntimeException::new);
+                .orElseThrow(RequiredHeaderException::new);
 
         request.setAttribute("user", user);
         request.setAttribute("room", room);
