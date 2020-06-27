@@ -4,6 +4,7 @@ import com.d2vfactory.throwmoney.domain.user.Room;
 import com.d2vfactory.throwmoney.domain.user.User;
 import com.d2vfactory.throwmoney.domain.user.repository.RoomRepository;
 import com.d2vfactory.throwmoney.domain.user.repository.UserRepository;
+import com.d2vfactory.throwmoney.domain.user.repository.UserRoomRepository;
 import com.d2vfactory.throwmoney.exceptions.RequiredHeaderException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
@@ -21,10 +22,12 @@ public class HeaderToAttributeInterceptor extends HandlerInterceptorAdapter {
 
     private final UserRepository userRepository;
     private final RoomRepository roomRepository;
+    private final UserRoomRepository userRoomRepository;
 
-    public HeaderToAttributeInterceptor(UserRepository userRepository, RoomRepository roomRepository) {
+    public HeaderToAttributeInterceptor(UserRepository userRepository, RoomRepository roomRepository, UserRoomRepository userRoomRepository) {
         this.userRepository = userRepository;
         this.roomRepository = roomRepository;
+        this.userRoomRepository = userRoomRepository;
     }
 
 
@@ -38,6 +41,10 @@ public class HeaderToAttributeInterceptor extends HandlerInterceptorAdapter {
 
         Room room = roomRepository.findById(roomId)
                 .orElseThrow(RequiredHeaderException::new);
+
+        // 사용자 정보가 대화방에 속해 있지 않으면 예외 발생
+        if (!userRoomRepository.fetchAllByRoom(room).stream().anyMatch(x -> user.equals(x.getUser())))
+            throw new RequiredHeaderException();
 
         request.setAttribute("user", user);
         request.setAttribute("room", room);

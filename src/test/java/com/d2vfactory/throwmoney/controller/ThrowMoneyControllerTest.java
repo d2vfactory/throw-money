@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -30,6 +31,7 @@ class ThrowMoneyControllerTest {
 
     @Test
     void throwMoney() throws Exception {
+        // 1번이 1번방에 뿌림
         mockMvc.perform(
                 post("/api/throwMoney")
                         .header(HEADER_USER_ID, 1)
@@ -43,7 +45,47 @@ class ThrowMoneyControllerTest {
     }
 
     @Test
+    void throwMoney_user1_room3() throws Exception {
+        // 1번이 3번방에 뿌림 : RequiredHeaderException => 1번은 3번방에 없음
+        mockMvc.perform(
+                post("/api/throwMoney")
+                        .header(HEADER_USER_ID, 1)
+                        .header(HEADER_ROOM_ID, "room-00003")
+                        .param("size", "3")
+                        .param("money", "10000"))
+                .andDo(print())
+                .andExpect(status().is(400));
+    }
+
+    @Test
     void receiveMoney() throws Exception {
+        // 1번이 1번 방에 뿌리기함
+        MvcResult throwResult = mockMvc.perform(
+                post("/api/throwMoney")
+                        .header(HEADER_USER_ID, 1)
+                        .header(HEADER_ROOM_ID, "room-00001")
+                        .param("size", "3")
+                        .param("money", "10000"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
+
+        String content = throwResult.getResponse().getContentAsString();
+        ThrowMoneyDTO throwMoneyDTO = objectMapper.readValue(content, ThrowMoneyDTO.class);
+
+
+        // 2번이 뿌린돈 받음
+        mockMvc.perform(
+                post("/api/receiveMoney")
+                        .header(HEADER_USER_ID, 2)
+                        .header(HEADER_ROOM_ID, "room-00001")
+                        .param("token", throwMoneyDTO.getToken()))
+                .andDo(print());
+
+    }
+
+    @Test
+    void receiveMoney_뿌린사람이받기() throws Exception {
         // 1번이 1번 방에 뿌리기함
         MvcResult throwResult = mockMvc.perform(
                 post("/api/throwMoney")
@@ -70,8 +112,28 @@ class ThrowMoneyControllerTest {
     }
 
     @Test
-    void getThrowMoney() {
+    void getThrowMoney() throws Exception {
+        // 1번이 1번 방에 뿌리기함
+        MvcResult throwResult = mockMvc.perform(
+                post("/api/throwMoney")
+                        .header(HEADER_USER_ID, 1)
+                        .header(HEADER_ROOM_ID, "room-00001")
+                        .param("size", "3")
+                        .param("money", "10000"))
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andReturn();
 
+        String content = throwResult.getResponse().getContentAsString();
+        ThrowMoneyDTO throwMoneyDTO = objectMapper.readValue(content, ThrowMoneyDTO.class);
+
+        // 1번이 조회
+        mockMvc.perform(
+                get("/api/throwMoney")
+                        .header(HEADER_USER_ID, 1)
+                        .header(HEADER_ROOM_ID, "room-00001")
+                        .param("token", throwMoneyDTO.getToken()))
+                .andDo(print());
     }
 
 
