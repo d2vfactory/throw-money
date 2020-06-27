@@ -23,8 +23,7 @@ public class ThrowMoneyController {
     @GetMapping("/throwMoney")
     public ThrowMoneyDTO getThrowMoney(HttpServletRequest request, String token) {
         TokenForm form = new TokenForm(request, token);
-
-        return null;
+        return moneyService.getThrowMoney(form);
     }
 
     // 돈 뿌리기
@@ -38,7 +37,6 @@ public class ThrowMoneyController {
     @PostMapping("/receiveMoney")
     public ReceiveMoneyDTO receiveMoney(HttpServletRequest request, String token) {
         TokenForm form = new TokenForm(request, token);
-
-        return null;
+        return moneyService.receiveMoney(form);
     }
 }
