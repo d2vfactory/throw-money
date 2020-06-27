@@ -2,11 +2,13 @@ package com.d2vfactory.throwmoney.domain.money;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 import java.time.LocalDateTime;
 
 @Data
+@NoArgsConstructor
 public class ReceiveMoneyDTO {
 
     private long receiveUserId;

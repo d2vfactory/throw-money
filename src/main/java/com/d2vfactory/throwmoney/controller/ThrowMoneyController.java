@@ -1,6 +1,7 @@
 package com.d2vfactory.throwmoney.controller;
 
 import com.d2vfactory.throwmoney.domain.money.*;
+import com.d2vfactory.throwmoney.service.ThrowMoneyService;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,30 +14,30 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 public class ThrowMoneyController {
 
-    private final MoneyService moneyService;
+    private final ThrowMoneyService throwMoneyService;
 
-    public ThrowMoneyController(MoneyService moneyService) {
-        this.moneyService = moneyService;
+    public ThrowMoneyController(ThrowMoneyService throwMoneyService) {
+        this.throwMoneyService = throwMoneyService;
     }
 
     // 뿌린돈 조회
     @GetMapping("/throwMoney")
     public ThrowMoneyDTO getThrowMoney(HttpServletRequest request, String token) {
         TokenForm form = new TokenForm(request, token);
-        return moneyService.getThrowMoney(form);
+        return throwMoneyService.getThrowMoney(form);
     }
 
     // 돈 뿌리기
     @PostMapping("/throwMoney")
     public ThrowMoneyDTO throwMoney(HttpServletRequest request, int size, int money) {
         ThrowMoneyForm form = new ThrowMoneyForm(request, size, money);
-        return moneyService.throwMoney(form);
+        return throwMoneyService.throwMoney(form);
     }
 
     // 뿌린돈 받기
     @PostMapping("/receiveMoney")
     public ReceiveMoneyDTO receiveMoney(HttpServletRequest request, String token) {
         TokenForm form = new TokenForm(request, token);
-        return moneyService.receiveMoney(form);
+        return throwMoneyService.receiveMoney(form);
     }
 }

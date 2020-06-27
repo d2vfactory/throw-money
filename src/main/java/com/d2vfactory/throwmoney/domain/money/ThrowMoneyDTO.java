@@ -2,12 +2,14 @@ package com.d2vfactory.throwmoney.domain.money;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Data
+@NoArgsConstructor
 public class ThrowMoneyDTO {
 
     private String token;
