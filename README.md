@@ -31,7 +31,8 @@ HTTP Header로 전달됩니다.
   * spring-boot-starter-data-jpa
   * spring-boot-starter-web
   * spring-boot-starter-aop
-* DB : h2   
+* DB : h2database
+  * console : http://localhost:8080/console        
 
 #### 문제 해결 전략
 * 3자리 문자열 토큰
@@ -84,8 +85,3 @@ http :8080/api/throwMoney X-USER-ID:1 X-ROOM-ID:room-00001 token==aML
 
 http :8080/api/throwMoney X-USER-ID:1 X-ROOM-ID:room-00001 token==a00
 ```     
-
-#### h2 console
-```
-http://localhost:8080/console
-```
